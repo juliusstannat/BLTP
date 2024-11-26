@@ -1,0 +1,22 @@
+Julius:
+- Ui fertigstellen  
+- bug fixes caesar encryption 
+    - testcases für extension 
+    - Namensgebung 
+    - HEADER_ID range überarbeiten 
+    - README für caesar encryption und UI
+
+Long: 
+- testcases (packetization und connection establishment)
+- README 
+- Testbeschreibung 
+
+Leon: 
+- Kommentare in bltp.py 
+- testcases 
+- debuggen in bltp.py (retransmission und congestion control)
+- README
+
+
+Design für testcases:
+- testcases für alle MUST keywords 

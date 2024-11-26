@@ -1,0 +1,69 @@
+import unittest
+import bltp
+import sock
+
+'''
+Dieser Test uberprueft die korrekte Funktionsweise des Handshakes zwischen Client und Server. 
+Fuer eine korrekte Funktionsweise dieses Tests sollte zuerst der entsprechende Test fuer den Server gestartet werden.
+Naehere Informationen zur korrekten Ausfuehrung des Tests sind der README zu entnehmen.
+'''
+
+class TestHandshakeClient(unittest.TestCase):
+    
+    '''
+    Prueft, ob der Client die Antwort des Servers richtig verarbeitet und die Verbindung aufbaut
+    '''
+    def test_handshake(self):
+        clientSock = None
+        
+        try:
+            # Erstelle Client
+            clientSock = sock.BLTPSocket("127.0.0.1", 54321, False)
+            client = bltp.BLTPConnection("127.0.0.1", 54321, "127.0.0.1", 12345, clientSock)
+
+            # Sende ein Paket der den Handshake initialisiert 
+            base_header = bltp.BaseHeader(0, 0, 60, bltp.HeaderType.HANDSHAKE)
+            handshake_packet = bltp.BLTPPacket(base_header, [bltp.HandshakeHeader(0, bltp.HeaderType.NO_HEADER, 1140)], None)
+            client.send(handshake_packet)
+            client.state = bltp.State.CLIENT_INIT 
+
+            # Client verarbeitet Antwort vom Server
+            client.receive_handler()
+            
+            # Client sollte in Zustand ESTABLISHED sein
+            self.assertEqual(client.state, bltp.State.ESTABLISHED)
+
+            input("Handshake-Test fertig. Bitte ENTER druecken. (Zuerst beim Server)")
+        finally:
+             # Schliesse geoeffneten Socket
+            if clientSock is not None:
+                clientSock.close()
+
+    '''
+    Client sollte nach dem Senden des fehlerhaften Handshake Pakets noch immer in CLIENT_INIT sein
+    '''
+    def test_false_ack(self):
+        clientSock = None
+        
+        try:
+            # Erstelle Client
+            clientSock = sock.BLTPSocket("127.0.0.1", 54321, False)
+            client = bltp.BLTPConnection("127.0.0.1", 54321, "127.0.0.1", 12345, clientSock)
+
+            #Sende ein Paket mit falschem ACK
+            base_header = bltp.BaseHeader(0, 1, 60, bltp.HeaderType.HANDSHAKE)
+            handshake_packet = bltp.BLTPPacket(base_header, [bltp.HandshakeHeader(0, bltp.HeaderType.NO_HEADER, 1140)], None)
+            client.send(handshake_packet)
+            client.state = bltp.State.CLIENT_INIT 
+            
+            # Client sollte nicht in Zustand ESTABLISHED sondern immer noch in CLIENT_INIT sein
+            self.assertEqual(client.state, bltp.State.CLIENT_INIT)
+
+            input("False-Ack-Test fertig. Bitte ENTER druecken. (Zuerst beim Server)")
+        finally:
+             # Schliesse geoeffneten Socket
+            if clientSock is not None:
+                clientSock.close()
+
+if __name__ == '__main__': 
+    unittest.main()

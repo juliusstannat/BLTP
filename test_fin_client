@@ -1,0 +1,37 @@
+import unittest
+import bltp
+import sock
+
+'''
+Dieser Test ueberprueft den ordnungsgemaessen Verbindungsabbau zwischen Client und Server.
+Weitere Informationen zur korrekten Ausfuehrung des Tests sind der README zu entnehmen.
+'''
+
+class TestFinClient(unittest.TestCase):
+    
+    def test_fin(self):
+        clientSock = None
+        try:
+            # Erstelle Client
+            clientSock = sock.BLTPSocket("127.0.0.1", 54321, False)
+            client = bltp.BLTPConnection("127.0.0.1", 54321, "127.0.0.1", 12345, clientSock)
+
+            client.state = bltp.State.ESTABLISHED
+
+            # Sende ein Paket der den Verbindungsabbau initialisiert 
+            base_header = bltp.BaseHeader(client.seq_num, client.ack_num, 60, bltp.HeaderType.FIN_RST)
+            fin_packet = bltp.BLTPPacket(base_header, [bltp.FinRstHeader(0, bltp.HeaderType.NO_HEADER, 0, None)], None)
+            client.send(fin_packet)
+            client.state = bltp.State.CLOSE_WAIT
+
+            # Client erhaelt Antwort des Servers
+            client.receive_handler()
+            self.assertEqual(client.state, bltp.State.CLOSED)
+
+        finally:
+            # Schliesse geoeffneten Socket
+            if clientSock is not None:
+                clientSock.close()
+
+if __name__ == '__main__': 
+    unittest.main()

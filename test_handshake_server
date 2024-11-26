@@ -1,0 +1,67 @@
+import unittest
+import bltp
+import sock
+
+'''
+Dieser Test uberprueft die korrekte Funktionsweise des Handshakes zwischen Client und Server. 
+Fuer eine korrekte Funktionsweise dieses Tests sollte dieser vor dem entsprechenden Test fuer den Client gestartet werden.
+Naehere Informationen zur korrekten Ausfuehrung des Tests sind der README zu entnehmen.
+'''
+
+class TestHandshakeServer(unittest.TestCase):
+
+    ''' 
+    Prueft, ob der Server nach Erhalt eines gueltigen Handshake-Pakets 
+    den Handshake ordnungsgemaess durchfuehrt und in den Zustand ESTABLISHED gelangt 
+    '''
+    def test_handshake(self):
+        serverSock = None
+        
+        try:
+            # Erstelle Server
+            serverSock = sock.BLTPSocket("127.0.0.1", 12345, False)
+            server = bltp.BLTPConnection("127.0.0.1", 12345, "127.0.0.1", 54321, serverSock)
+
+            # Warte auf eingehende Pakete
+            server.state = bltp.State.LISTEN
+
+            # Server verarbeitet eingehendes Paket
+            server.receive_handler()     
+            
+            # Server sollte Handshake nicht vollendet haben
+            self.assertEqual(server.state, bltp.State.ESTABLISHED)
+
+            input("Handshake-Test fertig. Bitte ENTER druecken.")
+        finally:
+             # Schliesse geoeffneten Socket
+            if serverSock is not None:
+                serverSock.close()
+
+    '''
+    Fehlerhafte Handshake-Pakete des Clients sollten beim Server nicht zu einem Verbindungsaufbau fuehren
+    '''
+    def test_false_ack(self):
+        serverSock = None
+        
+        try:
+            # Erstelle Server
+            serverSock = sock.BLTPSocket("127.0.0.1", 12345, False)
+            server = bltp.BLTPConnection("127.0.0.1", 12345, "127.0.0.1", 54321, serverSock)
+
+            # Warte auf eingehende Pakete
+            server.state = bltp.State.LISTEN
+
+            # Server verarbeitet eingehendes Paket
+            server.receive_handler()     
+            
+            # Server sollte Handshake nicht vollendet haben
+            self.assertEqual(server.state, bltp.State.LISTEN)
+
+            input("False-Ack-Test fertig. Bitte ENTER druecken.")
+        finally:
+             # Schliesse geoeffneten Socket
+            if serverSock is not None:
+                serverSock.close()
+
+if __name__ == '__main__': 
+    unittest.main()

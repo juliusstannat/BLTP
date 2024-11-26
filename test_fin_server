@@ -1,0 +1,36 @@
+import unittest
+import bltp
+import sock
+
+'''
+Dieser Test ueberprueft den ordnungsgemaessen Verbindungsabbau zwischen Client und Server.
+Weitere Informationen zur korrekten Ausfuehrung des Tests sind der README zu entnehmen.
+'''
+
+class TestHandshakeServer(unittest.TestCase):
+
+    '''
+    Der Server empfaengt ein Paket mit gesetzter FIN-Flag und sollte sich dann in Zustand EOF befinden.
+    Danach sendet der Server seinerseits ein solches Paket und schliesst den Verbindungsabbau ab.
+    '''
+    def test_fin(self):
+        serverSock = None
+        try:
+            # Erstelle Server
+            serverSock = sock.BLTPSocket("127.0.0.1", 12345, False)
+            server = bltp.BLTPConnection("127.0.0.1", 12345, "127.0.0.1", 54321, serverSock)
+
+            server.state = bltp.State.ESTABLISHED
+
+            # Server verarbeitet FIN-Packet des Clients
+            server.receive_handler()
+            self.assertEqual(server.state, bltp.State.CLOSED)
+
+
+        finally:    
+            # Schliesse geoeffneten Socket      
+            if serverSock is not None:
+                serverSock.close()
+
+if __name__ == '__main__': 
+    unittest.main()

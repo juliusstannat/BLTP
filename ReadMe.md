@@ -1,6 +1,6 @@
 # BLTP
 
-Das BLTP (Bachelor-Lab-Transport-Protocol) ist eine simple Erweiterung für die Datenuebertragung basierend auf UDP.
+Das BLTP (Bachelor-Lab-Transport-Protocol) ist eine Datenübertragungsprotokoll basierend auf UDP.
 
 ## Inhaltsverzeichnis
 
